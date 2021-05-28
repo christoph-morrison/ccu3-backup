@@ -1,0 +1,29 @@
+#! /bin/sh
+
+# NFS source host
+NFS_HOST="storage.fritz.box"
+
+# NFS version
+NFS_VERSION="4"
+
+# Path on the nfs share
+NFS_PATH="/hab"
+
+# Local path where the nfs should be mounted
+LOCAL_MNT_PATH="/usr/local/mnt/nfs/backup"
+
+# Local output directory
+OUTPUT_DIRECTORY="${LOCAL_MNT_PATH}/backup/ccu3/"
+
+# Delete files older than $MAX_OLD_DAYS
+# 0 = never delete
+MAX_OLD_DAYS="0"
+
+
+mount -t "nfs${NFS_VERSION}" -o soft "${NFS_HOST}:${NFS_PATH}" "${LOCAL_MNT_PATH}"
+sh /usr/local/addons/backup/ccu3-backup -v -o "${OUTPUT_DIRECTORY}"
+
+# clean up old files if $MAX_OLD_DAYS is > 0
+if [ "$MAX_OLD_DAYS" -gt 0 ]; then
+  find "$OUTPUT_DIRECTORY" -name "*.sbk" -mtime "+${MAX_OLD_DAYS}" -delete;
+fi
