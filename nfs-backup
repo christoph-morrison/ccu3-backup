@@ -19,7 +19,6 @@ OUTPUT_DIRECTORY="${LOCAL_MNT_PATH}/backup/ccu3/"
 # 0 = never delete
 MAX_OLD_DAYS="0"
 
-
 mount -t "nfs${NFS_VERSION}" -o soft "${NFS_HOST}:${NFS_PATH}" "${LOCAL_MNT_PATH}"
 sh /usr/local/addons/backup/ccu3-backup -v -o "${OUTPUT_DIRECTORY}"
 
@@ -27,3 +26,6 @@ sh /usr/local/addons/backup/ccu3-backup -v -o "${OUTPUT_DIRECTORY}"
 if [ "$MAX_OLD_DAYS" -gt 0 ]; then
   find "$OUTPUT_DIRECTORY" -name "*.sbk" -mtime "+${MAX_OLD_DAYS}" -delete;
 fi
+
+# clean up old tmp files
+find "${LOCAL_MNT_PATH}" -name '*tmp*' -exec rm -rf {} \;
