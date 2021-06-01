@@ -4,7 +4,7 @@
 NFS_HOST="storage.fritz.box"
 
 # NFS version
-NFS_VERSION="4"
+NFS_VERSION=4
 
 # Path on the nfs share
 NFS_PATH="/hab"
@@ -17,15 +17,35 @@ OUTPUT_DIRECTORY="${LOCAL_MNT_PATH}/backup/ccu3/"
 
 # Delete files older than $MAX_OLD_DAYS
 # 0 = never delete
-MAX_OLD_DAYS="0"
+MAX_OLD_DAYS=0
 
-mount -t "nfs${NFS_VERSION}" -o soft "${NFS_HOST}:${NFS_PATH}" "${LOCAL_MNT_PATH}"
-sh /usr/local/addons/backup/ccu3-backup -v -o "${OUTPUT_DIRECTORY}"
+# ccu3 Hostname, `hostname` should be enough
+API_HOST="$(hostname -f)"
+
+# ccu3 script API endpoint
+API_ENDPOINT="x.exe"
+
+# ccu3 variable name
+HM_VARIABLE_NAME="last-backup"
+
+if ! test -d "$OUTPUT_DIRECTORY";
+then
+  if ! mount -t "nfs${NFS_VERSION}" -o soft "${NFS_HOST}:${NFS_PATH}" "${LOCAL_MNT_PATH}";
+    then
+    exit 1;
+  fi
+fi
+
+if sh /usr/local/addons/backup/ccu3-backup -o "${OUTPUT_DIRECTORY}";
+then
+  TS="$(date +%s)"
+  curl -s --url "http://{$API_HOST}/${API_ENDPOINT}?Antwort=dom.GetObject('${HM_VARIABLE_NAME}').State('$TS')" > /dev/null;
+fi
 
 # clean up old files if $MAX_OLD_DAYS is > 0
 if [ "$MAX_OLD_DAYS" -gt 0 ]; then
-  find "$OUTPUT_DIRECTORY" -name "*.sbk" -mtime "+${MAX_OLD_DAYS}" -delete;
+  find "$OUTPUT_DIRECTORY" -name "*.sbk" -mtime "+${MAX_OLD_DAYS}" -delete 2> /dev/null;
 fi
 
 # clean up old tmp files
-find "${LOCAL_MNT_PATH}" -name '*tmp*' -exec rm -rf {} \;
+find "${LOCAL_MNT_PATH}" -name '*tmp*' -exec rm -rf {} \; 2> /dev/null;
