@@ -17,7 +17,7 @@ OUTPUT_DIRECTORY="${LOCAL_MNT_PATH}/backup/ccu3/"
 
 # Delete files older than $MAX_OLD_DAYS
 # 0 = never delete
-MAX_OLD_DAYS=0
+MAX_OLD_DAYS=14
 
 # ccu3 Hostname, `hostname` should be enough
 API_HOST="$(hostname -f)"
@@ -26,7 +26,7 @@ API_HOST="$(hostname -f)"
 API_ENDPOINT="x.exe"
 
 # ccu3 variable name
-HM_VARIABLE_NAME="last-backup"
+HM_VARIABLE_NAME="ccu3.backup.last"
 
 if ! test -d "$OUTPUT_DIRECTORY";
 then
